@@ -1,0 +1,38 @@
+import java.util.Scanner;
+
+public class Main {
+    static int min_operations(int n, int[] E, int[] T) {
+        long ans = 0;
+        int prev = 0;
+
+        for (int i = 0; i < n; i++) {
+            int cur = T[i] - E[i];
+            if (cur > 0) {
+                ans += Math.max(0, cur - Math.max(prev, 0));
+            } else if (cur < 0) {
+                ans += Math.max(0, Math.min(prev, 0) - cur);
+            }
+            prev = cur;
+        }
+
+        return (int) ans;
+    }
+
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        int n = scanner.nextInt();
+
+        int[] E = new int[n];
+        int[] T = new int[n];
+
+        for (int i = 0; i < n; i++) {
+            E[i] = scanner.nextInt();
+        }
+
+        for (int i = 0; i < n; i++) {
+            T[i] = scanner.nextInt();
+        }
+
+        System.out.println(min_operations(n, E, T));
+    }
+}
