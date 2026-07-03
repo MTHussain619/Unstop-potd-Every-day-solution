@@ -1,0 +1,54 @@
+import java.util.Scanner;
+import java.util.ArrayDeque;
+
+public class Main {
+    public static int smallestMaxDifference(int[] arr, int k) {
+        ArrayDeque<Integer> maxDeque = new ArrayDeque<>();
+        ArrayDeque<Integer> minDeque = new ArrayDeque<>();
+
+        int ans = Integer.MAX_VALUE;
+
+        for (int i = 0; i < arr.length; i++) {
+            // Remove indices outside the current window
+            while (!maxDeque.isEmpty() && maxDeque.peekFirst() <= i - k) {
+                maxDeque.pollFirst();
+            }
+            while (!minDeque.isEmpty() && minDeque.peekFirst() <= i - k) {
+                minDeque.pollFirst();
+            }
+
+            // Maintain decreasing deque for maximum
+            while (!maxDeque.isEmpty() && arr[maxDeque.peekLast()] <= arr[i]) {
+                maxDeque.pollLast();
+            }
+            maxDeque.offerLast(i);
+
+            // Maintain increasing deque for minimum
+            while (!minDeque.isEmpty() && arr[minDeque.peekLast()] >= arr[i]) {
+                minDeque.pollLast();
+            }
+            minDeque.offerLast(i);
+
+            // Calculate answer when window size reaches k
+            if (i >= k - 1) {
+                int diff = arr[maxDeque.peekFirst()] - arr[minDeque.peekFirst()];
+                ans = Math.min(ans, diff);
+            }
+        }
+
+        return ans;
+    }
+
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        int n = scanner.nextInt();
+        int[] arr = new int[n];
+        for (int i = 0; i < n; i++) {
+            arr[i] = scanner.nextInt();
+        }
+        int k = scanner.nextInt();
+
+        int result = smallestMaxDifference(arr, k);
+        System.out.println(result);
+    }
+}
