@@ -1,0 +1,88 @@
+import java.util.*;
+
+public class Main {
+
+    static class Node {
+        int id;
+        int value;
+        Node next;
+
+        Node(int id, int value) {
+            this.id = id;
+            this.value = value;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+
+        int n = sc.nextInt();
+
+        Map<Integer, Node> map = new HashMap<>();
+        int[] ids = new int[n];
+        int[] nextIds = new int[n];
+
+        for (int i = 0; i < n; i++) {
+            int id = sc.nextInt();
+            int value = sc.nextInt();
+            int nextId = sc.nextInt();
+
+            map.put(id, new Node(id, value));
+            ids[i] = id;
+            nextIds[i] = nextId;
+        }
+
+        // Link nodes
+        for (int i = 0; i < n; i++) {
+            if (nextIds[i] != -1) {
+                map.get(ids[i]).next = map.get(nextIds[i]);
+            }
+        }
+
+        int startId = sc.nextInt();
+        Node head = map.get(startId);
+
+        // Floyd's Cycle Detection
+        Node slow = head;
+        Node fast = head;
+        boolean hasCycle = false;
+
+        while (fast != null && fast.next != null) {
+            slow = slow.next;
+            fast = fast.next.next;
+
+            if (slow == fast) {
+                hasCycle = true;
+                break;
+            }
+        }
+
+        // Remove cycle if present
+        if (hasCycle) {
+            slow = head;
+
+            if (slow == fast) {
+                while (fast.next != slow) {
+                    fast = fast.next;
+                }
+            } else {
+                while (slow.next != fast.next) {
+                    slow = slow.next;
+                    fast = fast.next;
+                }
+            }
+
+            fast.next = null;
+        }
+
+        // Print recovered chain
+        StringBuilder sb = new StringBuilder();
+        Node curr = head;
+        while (curr != null) {
+            sb.append(curr.value).append(" ");
+            curr = curr.next;
+        }
+
+        System.out.print(sb.toString().trim());
+    }
+}
