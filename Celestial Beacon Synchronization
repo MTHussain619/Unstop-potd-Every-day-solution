@@ -1,0 +1,130 @@
+import java.io.*;
+import java.util.*;
+
+public class Main {
+
+    static class FastScanner {
+        private final InputStream in = System.in;
+        private final byte[] buffer = new byte[1 << 16];
+        private int ptr = 0, len = 0;
+
+        private int read() throws IOException {
+            if (ptr >= len) {
+                len = in.read(buffer);
+                ptr = 0;
+                if (len <= 0) return -1;
+            }
+            return buffer[ptr++];
+        }
+
+        int nextInt() throws IOException {
+            int c;
+            while ((c = read()) <= ' ') ;
+            int sign = 1;
+            if (c == '-') {
+                sign = -1;
+                c = read();
+            }
+            int val = 0;
+            while (c > ' ') {
+                val = val * 10 + c - '0';
+                c = read();
+            }
+            return val * sign;
+        }
+    }
+
+    static class Query {
+        int l, r, idx, block;
+
+        Query(int l, int r, int idx, int block) {
+            this.l = l;
+            this.r = r;
+            this.idx = idx;
+            this.block = block;
+        }
+    }
+
+    static int[] arr;
+    static long[] freq;
+    static long currentAnswer = 0;
+
+    static void add(int idx) {
+        int val = arr[idx];
+        long f = freq[val];
+        currentAnswer -= f * f;
+        f++;
+        currentAnswer += f * f;
+        freq[val] = f;
+    }
+
+    static void remove(int idx) {
+        int val = arr[idx];
+        long f = freq[val];
+        currentAnswer -= f * f;
+        f--;
+        currentAnswer += f * f;
+        freq[val] = f;
+    }
+
+    public static void main(String[] args) throws Exception {
+
+        FastScanner fs = new FastScanner();
+
+        int N = fs.nextInt();
+        int Q = fs.nextInt();
+
+        arr = new int[N];
+        int maxVal = 0;
+
+        for (int i = 0; i < N; i++) {
+            arr[i] = fs.nextInt();
+            maxVal = Math.max(maxVal, arr[i]);
+        }
+
+        freq = new long[maxVal + 1];
+
+        int blockSize = (int) Math.sqrt(N);
+
+        Query[] queries = new Query[Q];
+
+        for (int i = 0; i < Q; i++) {
+            int l = fs.nextInt() - 1;
+            int r = fs.nextInt() - 1;
+            queries[i] = new Query(l, r, i, l / blockSize);
+        }
+
+        Arrays.sort(queries, (a, b) -> {
+            if (a.block != b.block)
+                return Integer.compare(a.block, b.block);
+
+            if ((a.block & 1) == 0)
+                return Integer.compare(a.r, b.r);
+            else
+                return Integer.compare(b.r, a.r);
+        });
+
+        long[] ans = new long[Q];
+
+        int curL = 0;
+        int curR = -1;
+
+        for (Query q : queries) {
+
+            while (curL > q.l) add(--curL);
+            while (curR < q.r) add(++curR);
+
+            while (curL < q.l) remove(curL++);
+            while (curR > q.r) remove(curR--);
+
+            ans[q.idx] = currentAnswer;
+        }
+
+        StringBuilder sb = new StringBuilder();
+
+        for (long x : ans)
+            sb.append(x).append('\n');
+
+        System.out.print(sb);
+    }
+}
