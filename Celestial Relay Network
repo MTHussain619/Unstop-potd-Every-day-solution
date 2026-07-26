@@ -1,0 +1,73 @@
+#include <stdio.h>
+
+// Using explicit LL to prevent any double-to-int conversion errors
+#define INF 1000000000000000LL
+
+// Macro to find the minimum of two values
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+
+// Declare the arrays globally to avoid Stack Overflow for large DP tables
+long long energy[20][20];
+long long dp[1 << 17][20];
+
+int main() {
+    int N;
+    // Read N, exit if reading fails
+    if (scanf("%d", &N) != 1) return 0;
+
+    int V = N + 1; // Total number of locations (0 to N)
+    
+    // Read the energy matrix
+    for (int i = 0; i < V; ++i) {
+        for (int j = 0; j < V; ++j) {
+            scanf("%lld", &energy[i][j]);
+        }
+    }
+
+    // Initialize DP table to INF
+    int num_masks = 1 << V;
+    for (int i = 0; i < num_masks; ++i) {
+        for (int j = 0; j < V; ++j) {
+            dp[i][j] = INF;
+        }
+    }
+
+    // Base case: We start at the Central Dock (location 0)
+    dp[1][0] = 0;
+
+    // Fill the DP table
+    for (int mask = 1; mask < num_masks; ++mask) {
+        // We only care about states that originate from the Central Dock
+        if ((mask & 1) == 0) continue;
+
+        for (int u = 0; u < V; ++u) {
+            // Check if location 'u' is in the current mask
+            if (mask & (1 << u)) {
+                if (dp[mask][u] == INF) continue;
+
+                // Try to travel to all unvisited locations 'v'
+                for (int v = 0; v < V; ++v) {
+                    if (!(mask & (1 << v))) {
+                        int next_mask = mask | (1 << v);
+                        dp[next_mask][v] = MIN(dp[next_mask][v], dp[mask][u] + energy[u][v]);
+                    }
+                }
+            }
+        }
+    }
+
+    // Calculate the minimum energy to complete the tour and return to location 0
+    long long min_energy = INF;
+    int full_mask = num_masks - 1;
+    
+    for (int i = 1; i < V; ++i) {
+        if (dp[full_mask][i] != INF) {
+            min_energy = MIN(min_energy, dp[full_mask][i] + energy[i][0]);
+        }
+    }
+
+    // Print the result
+    printf("%lld\n", min_energy);
+
+    return 0;
+}
