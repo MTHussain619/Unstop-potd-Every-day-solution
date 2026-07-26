@@ -1,0 +1,76 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+using namespace std;
+
+int num_guardians;
+vector<vector<long long>> compatibility;
+vector<long long> memo;
+
+// DP function to find the maximum compatibility
+long long solve(int mask) {
+    // Base case: All guardians are paired (all bits are 1)
+    if (mask == (1 << num_guardians) - 1) {
+        return 0;
+    }
+    
+    // Return memoized result if already computed
+    if (memo[mask] != -1) {
+        return memo[mask];
+    }
+
+    // Find the first unpaired guardian
+    int i = -1;
+    for (int k = 0; k < num_guardians; ++k) {
+        if (!(mask & (1 << k))) {
+            i = k;
+            break;
+        }
+    }
+
+    long long max_score = 0;
+    
+    // Try pairing guardian i with every other unpaired guardian j
+    for (int j = i + 1; j < num_guardians; ++j) {
+        if (!(mask & (1 << j))) {
+            // Mark both i and j as paired in the new mask
+            int next_mask = mask | (1 << i) | (1 << j);
+            
+            // Calculate score for this pairing plus the optimal score for the remaining
+            long long current_score = compatibility[i][j] + solve(next_mask);
+            max_score = max(max_score, current_score);
+        }
+    }
+
+    // Store and return the result
+    return memo[mask] = max_score;
+}
+
+int main() {
+    // Fast I/O
+    ios_base::sync_with_stdio(false);
+    cin.tie(NULL);
+
+    int N;
+    if (!(cin >> N)) return 0;
+    
+    num_guardians = 2 * N;
+    
+    // Initialize the compatibility matrix
+    compatibility.assign(num_guardians, vector<long long>(num_guardians));
+    for (int i = 0; i < num_guardians; ++i) {
+        for (int j = 0; j < num_guardians; ++j) {
+            cin >> compatibility[i][j];
+        }
+    }
+
+    // Initialize the memoization table with -1
+    // Size is 2^(2N) to cover all subsets of guardians
+    memo.assign(1 << num_guardians, -1);
+
+    // Start with mask 0 (no guardians paired)
+    cout << solve(0) << "\n";
+
+    return 0;
+}
