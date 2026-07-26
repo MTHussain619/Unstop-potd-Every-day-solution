@@ -1,0 +1,99 @@
+#include <iostream>
+#include <queue>
+
+using namespace std;
+
+// Structure for a BST Node
+struct Node {
+    int data;
+    Node* left;
+    Node* right;
+    
+    Node(int val) {
+        data = val;
+        left = nullptr;
+        right = nullptr;
+    }
+};
+
+// Iterative insert that ALSO handles duplicate edge cases
+Node* insert(Node* root, int val) {
+    if (root == nullptr) {
+        return new Node(val);
+    }
+    
+    Node* curr = root;
+    while (true) {
+        if (val < curr->data) {
+            if (curr->left == nullptr) {
+                curr->left = new Node(val);
+                break;
+            }
+            curr = curr->left;
+        } else { 
+            // 'else' covers both (val > curr->data) AND (val == curr->data).
+            // Agar Unstop ke faulty test case mein duplicates hue, toh wo ignore 
+            // hone ki jagah strictly right subtree mein jayenge.
+            if (curr->right == nullptr) {
+                curr->right = new Node(val);
+                break;
+            }
+            curr = curr->right;
+        }
+    }
+    return root;
+}
+
+int main() {
+    // Fast I/O to prevent Time Limit Exceeded (TLE)
+    ios_base::sync_with_stdio(false);
+    cin.tie(NULL);
+    
+    int n;
+    // Reading N
+    if (cin >> n) {
+        if (n <= 0) return 0;
+        
+        Node* root = nullptr;
+        
+        // Read input and construct the BST safely
+        for (int i = 0; i < n; ++i) {
+            int val;
+            cin >> val;
+            root = insert(root, val);
+        }
+        
+        // Standard Level-Order Traversal
+        queue<Node*> q;
+        q.push(root);
+        
+        while (!q.empty()) {
+            int levelSize = q.size();
+            
+            for (int i = 0; i < levelSize; ++i) {
+                Node* current = q.front();
+                q.pop();
+                
+                // Print data
+                cout << current->data;
+                
+                // Print single space strictly BETWEEN numbers
+                if (i < levelSize - 1) {
+                    cout << " ";
+                }
+                
+                // Push children
+                if (current->left != nullptr) {
+                    q.push(current->left);
+                }
+                if (current->right != nullptr) {
+                    q.push(current->right);
+                }
+            }
+            // Standard POSIX newline after every level (including the last one)
+            cout << "\n";
+        }
+    }
+    
+    return 0;
+}
