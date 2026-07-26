@@ -1,0 +1,44 @@
+#include <iostream>
+#include <queue>
+#include <string>
+
+using namespace std;
+
+int main() {
+    // Optimize standard I/O operations for faster execution
+    ios_base::sync_with_stdio(false);
+    cin.tie(NULL);
+
+    int n;
+    // Read the number of events
+    if (!(cin >> n)) return 0;
+
+    queue<long long> waiting_line;
+    string event_type;
+    long long vehicle_id;
+
+    // Process each event
+    for (int i = 0; i < n; ++i) {
+        cin >> event_type;
+        
+        if (event_type == "ENTER") {
+            cin >> vehicle_id;
+            waiting_line.push(vehicle_id);
+        } 
+        else if (event_type == "EXIT") {
+            // Only pop if the queue is not already empty (as per Sample 1: "No effect")
+            if (!waiting_line.empty()) {
+                waiting_line.pop();
+            }
+        }
+    }
+
+    // Output the final state of the monitor
+    if (waiting_line.empty()) {
+        cout << "EMPTY\n";
+    } else {
+        cout << waiting_line.front() << "\n";
+    }
+
+    return 0;
+}
