@@ -1,0 +1,35 @@
+#include <iostream>
+#include <string>
+
+using namespace std;
+
+int main() {
+    // Fast I/O operations
+    ios_base::sync_with_stdio(false);
+    cin.tie(NULL);
+
+    string S;
+    cin >> S;
+
+    bool isMirror = true;
+    int left = 0;
+    int right = S.length() - 1;
+
+    // Two-pointer approach to compare characters from both ends
+    while (left < right) {
+        if (S[left] != S[right]) {
+            isMirror = false;
+            break;
+        }
+        left++;
+        right--;
+    }
+
+    if (isMirror) {
+        cout << "YES" << endl;
+    } else {
+        cout << "NO" << endl;
+    }
+
+    return 0;
+}
