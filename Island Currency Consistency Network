@@ -1,0 +1,151 @@
+import java.io.*;
+import java.util.*;
+import java.text.*;
+import java.math.*;
+import java.util.regex.*;
+
+class Main {
+    static final long MOD = 1_000_000_007L;
+    static int[] parent, rnk;
+    static long[] rate;
+    static int[] pathBuf;
+
+    static long power(long base, long exp) {
+        base %= MOD;
+        if (base < 0) base += MOD;
+        long result = 1;
+        while (exp > 0) {
+            if ((exp & 1) == 1) result = result * base % MOD;
+            base = base * base % MOD;
+            exp >>= 1;
+        }
+        return result;
+    }
+
+    static long inv(long a) {
+        return power(a, MOD - 2);
+    }
+
+    static int find(int u) {
+        int x = u;
+        while (parent[x] != x) x = parent[x];
+        int root = x;
+
+        if (parent[u] == root) {
+            return root;
+        }
+
+        int cur = u;
+        int cnt = 0;
+        int[] path = pathBuf;
+        while (cur != root) {
+            path[cnt++] = cur;
+            cur = parent[cur];
+        }
+        for (int i = cnt - 1; i >= 0; i--) {
+            int node = path[i];
+            if (i != cnt - 1) {
+                int oldParent = path[i + 1];
+                rate[node] = rate[node] * rate[oldParent] % MOD;
+            }
+            parent[node] = root;
+        }
+        return root;
+    }
+
+    public static void main(String[] args) {
+        /* Enter your code here. Read input from STDIN. Print output to STDOUT. Your class should be named Solution. */
+        try {
+            DataInputStream in = new DataInputStream(new BufferedInputStream(System.in, 1 << 16));
+            int N = nextInt(in);
+            int M = nextInt(in);
+
+            parent = new int[N + 1];
+            rnk = new int[N + 1];
+            rate = new long[N + 1];
+            pathBuf = new int[N + 5];
+            for (int i = 1; i <= N; i++) {
+                parent[i] = i;
+                rate[i] = 1L;
+                rnk[i] = 0;
+            }
+
+            StringBuilder sb = new StringBuilder();
+
+            for (int e = 0; e < M; e++) {
+                int type = nextInt(in);
+                if (type == 1) {
+                    int u = nextInt(in);
+                    int v = nextInt(in);
+                    long p = nextInt(in);
+                    long q = nextInt(in);
+
+                    int ru = find(u);
+                    long rateU = rate[u];
+                    int rv = find(v);
+                    long rateV = rate[v];
+
+                    long pq = (p % MOD) * inv(q % MOD) % MOD;
+
+                    if (ru == rv) {
+                        long lhs = rateU * inv(rateV) % MOD;
+                        if (lhs == pq) {
+                            sb.append("OK\n");
+                        } else {
+                            sb.append("CONTRADICTION\n");
+                        }
+                    } else {
+                        if (rnk[ru] >= rnk[rv]) {
+                            long invPQ = inv(pq);
+                            long newRate = inv(rateV) * invPQ % MOD * rateU % MOD;
+                            parent[rv] = ru;
+                            rate[rv] = newRate;
+                            if (rnk[ru] == rnk[rv]) rnk[ru]++;
+                        } else {
+                            long newRate = inv(rateU) * pq % MOD * rateV % MOD;
+                            parent[ru] = rv;
+                            rate[ru] = newRate;
+                        }
+                        sb.append("OK\n");
+                    }
+                } else {
+                    int u = nextInt(in);
+                    int v = nextInt(in);
+                    int ru = find(u);
+                    long rateU = rate[u];
+                    int rv = find(v);
+                    long rateV = rate[v];
+                    if (ru != rv) {
+                        sb.append("UNKNOWN\n");
+                    } else {
+                        long ans = rateU * inv(rateV) % MOD;
+                        sb.append(ans).append('\n');
+                    }
+                }
+            }
+
+            System.out.print(sb);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static int nextInt(DataInputStream in) throws IOException {
+        int ret = 0;
+        int b = in.read();
+        while (b < '0' || b > '9') {
+            if (b == '-') break;
+            b = in.read();
+        }
+        boolean neg = false;
+        if (b == '-') {
+            neg = true;
+            b = in.read();
+        }
+        while (b >= '0' && b <= '9') {
+            ret = ret * 10 + (b - '0');
+            b = in.read();
+        }
+        return neg ? -ret : ret;
+    }
+}
