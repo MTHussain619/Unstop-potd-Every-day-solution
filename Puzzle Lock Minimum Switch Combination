@@ -1,0 +1,76 @@
+import java.io.*;
+import java.util.*;
+
+public class Main {
+
+    static class FastScanner {
+        private final DataInputStream in = new DataInputStream(System.in);
+        private final byte[] buffer = new byte[1 << 16];
+        private int ptr = 0, len = 0;
+
+        private int read() throws IOException {
+            if (ptr >= len) {
+                len = in.read(buffer);
+                ptr = 0;
+                if (len == -1) return -1;
+            }
+            return buffer[ptr++];
+        }
+
+        int nextInt() throws IOException {
+            int c;
+            while ((c = read()) <= ' ') {
+                if (c == -1) return -1;
+            }
+            int num = 0;
+            while (c > ' ') {
+                num = num * 10 + (c - '0');
+                c = read();
+            }
+            return num;
+        }
+    }
+
+    public static void main(String[] args) throws Exception {
+        FastScanner fs = new FastScanner();
+
+        int M = fs.nextInt();
+        int[] mask = new int[M];
+
+        for (int i = 0; i < M; i++) {
+            mask[i] = fs.nextInt();
+        }
+
+        int S = fs.nextInt();
+        int T = fs.nextInt();
+
+        int need = S ^ T;
+
+        if (need == 0) {
+            System.out.println(0);
+            return;
+        }
+
+        int total = 1 << M;
+
+        int[] xor = new int[total];
+        int[] bits = new int[total];
+
+        int ans = Integer.MAX_VALUE;
+
+        for (int subset = 1; subset < total; subset++) {
+            int lsb = subset & -subset;
+            int idx = Integer.numberOfTrailingZeros(lsb);
+            int prev = subset ^ lsb;
+
+            xor[subset] = xor[prev] ^ mask[idx];
+            bits[subset] = bits[prev] + 1;
+
+            if (xor[subset] == need) {
+                ans = Math.min(ans, bits[subset]);
+            }
+        }
+
+        System.out.println(ans == Integer.MAX_VALUE ? -1 : ans);
+    }
+}
