@@ -1,0 +1,92 @@
+#include <iostream>
+#include <vector>
+#include <string>
+
+using namespace std;
+
+// Trie node structure
+struct TrieNode {
+    int children[26]; // Indices of child nodes in the vector for characters 'a' to 'z'
+    long long count;  // Number of manuscript strings passing through this prefix node
+
+    TrieNode() {
+        for (int i = 0; i < 26; ++i) {
+            children[i] = -1; // -1 indicates no existing child for this character
+        }
+        count = 0;
+    }
+};
+
+// Global vector to store all Trie nodes linearly for optimal memory access
+vector<TrieNode> trie;
+
+// Function to insert a manuscript into the Trie
+void insertWord(const string& word) {
+    int curr = 0; // Start at the root (index 0)
+    for (char c : word) {
+        int index = c - 'a';
+        if (trie[curr].children[index] == -1) {
+            // Create a new node, store its index, and push it to the vector
+            trie[curr].children[index] = trie.size();
+            trie.push_back(TrieNode());
+        }
+        // Traverse to the child node
+        curr = trie[curr].children[index];
+        // Increment the count of words passing through this prefix
+        trie[curr].count++;
+    }
+}
+
+// Function to find how many manuscripts have the given prefix
+long long countPrefixes(const string& prefix) {
+    int curr = 0; // Start at the root
+    for (char c : prefix) {
+        int index = c - 'a';
+        if (trie[curr].children[index] == -1) {
+            // The prefix path breaks, meaning 0 manuscripts start with this fragment
+            return 0; 
+        }
+        curr = trie[curr].children[index];
+    }
+    // Return the count stored at the final node of the queried prefix
+    return trie[curr].count;
+}
+
+int main() {
+    // Optimize standard I/O operations for performance with large inputs
+    ios_base::sync_with_stdio(false);
+    cin.tie(NULL);
+
+    // Initialize the Trie with a root node
+    trie.push_back(TrieNode());
+
+    int n;
+    if (!(cin >> n)) return 0;
+
+    // Read and insert all unique manuscript inscriptions
+    for (int i = 0; i < n; ++i) {
+        string word;
+        cin >> word;
+        insertWord(word);
+    }
+
+    int q;
+    if (!(cin >> q)) return 0;
+
+    // Process each query fragment
+    for (int i = 0; i < q; ++i) {
+        string query;
+        cin >> query;
+        
+        // 1. Get the number of matching manuscripts for the query prefix
+        long long matchCount = countPrefixes(query);
+        
+        // 2. Calculate the possible unordered pairs: n * (n - 1) / 2
+        long long pairs = matchCount * (matchCount - 1) / 2;
+        
+        // 3. Output the final answer
+        cout << pairs << "\n";
+    }
+
+    return 0;
+}
