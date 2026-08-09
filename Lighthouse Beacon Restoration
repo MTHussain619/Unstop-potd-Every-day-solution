@@ -1,0 +1,57 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <queue>
+
+using namespace std;
+
+// Structure to store repair details
+struct Lighthouse {
+    long long duration;
+    long long deadline;
+};
+
+// Comparator to sort lighthouses by deadline in ascending order
+bool compareLighthouses(const Lighthouse& a, const Lighthouse& b) {
+    if (a.deadline != b.deadline) {
+        return a.deadline < b.deadline;
+    }
+    return a.duration < b.duration;
+}
+
+int main() {
+    // Fast I/O
+    ios_base::sync_with_stdio(false);
+    cin.tie(NULL);
+
+    int n;
+    if (!(cin >> n)) return 0;
+
+    vector<Lighthouse> lighthouses(n);
+    for (int i = 0; i < n; ++i) {
+        cin >> lighthouses[i].duration >> lighthouses[i].deadline;
+    }
+
+    // Step 1: Sort by deadline ascending
+    sort(lighthouses.begin(), lighthouses.end(), compareLighthouses);
+
+    // Step 2: Max-heap to track duration of selected lighthouses
+    priority_queue<long long> maxHeap;
+    long long current_time = 0;
+
+    for (int i = 0; i < n; ++i) {
+        current_time += lighthouses[i].duration;
+        maxHeap.push(lighthouses[i].duration);
+
+        // If deadline is missed, drop the lighthouse with the longest repair time
+        if (current_time > lighthouses[i].deadline) {
+            current_time -= maxHeap.top();
+            maxHeap.pop();
+        }
+    }
+
+    // Step 3: Output the max number of restored lighthouses
+    cout << maxHeap.size() << "\n";
+
+    return 0;
+}
