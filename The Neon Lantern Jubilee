@@ -1,0 +1,54 @@
+#include <iostream>
+#include <vector>
+#include <unordered_map>
+
+using namespace std;
+
+int main() {
+    // Optimize standard I/O operations for performance
+    ios_base::sync_with_stdio(false);
+    cin.tie(NULL);
+
+    int N;
+    long long K;
+    
+    // Read N and K
+    if (!(cin >> N >> K)) return 0;
+
+    vector<long long> codes(N);
+    for (int i = 0; i < N; ++i) {
+        cin >> codes[i];
+    }
+
+    // Map to store the frequency of prefix XOR values
+    unordered_map<long long, long long> prefixXorCount;
+    
+    long long currentXor = 0;
+    long long totalHarmonizedSegments = 0;
+
+    // Base case: A prefix XOR of 0 has a frequency of 1 initially.
+    // This handles subarrays that start precisely from index 0 (L = 1).
+    prefixXorCount[0] = 1;
+
+    for (int i = 0; i < N; ++i) {
+        // Update the running prefix XOR
+        currentXor ^= codes[i];
+        
+        // The value we need to find in our map to form a segment with XOR K
+        long long targetXor = currentXor ^ K;
+        
+        // If the target XOR exists in our map, it means we found segments
+        // ending at the current index i with a total XOR of K.
+        if (prefixXorCount.find(targetXor) != prefixXorCount.end()) {
+            totalHarmonizedSegments += prefixXorCount[targetXor];
+        }
+        
+        // Add the current prefix XOR to our map for future elements to use
+        prefixXorCount[currentXor]++;
+    }
+
+    // Print the final count
+    cout << totalHarmonizedSegments << "\n";
+
+    return 0;
+}
