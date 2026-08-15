@@ -1,0 +1,63 @@
+#include <iostream>
+#include <vector>
+#include <queue>
+
+using namespace std;
+
+int main() {
+    // Optimize standard I/O operations for competitive programming
+    ios_base::sync_with_stdio(false);
+    cin.tie(NULL);
+
+    int n, m, k;
+    if (!(cin >> n >> m >> k)) return 0;
+
+    // Adjacency list for the road network
+    vector<vector<int>> adj(n + 1);
+    for (int i = 0; i < m; ++i) {
+        int u, v;
+        cin >> u >> v;
+        adj[u].push_back(v);
+        adj[v].push_back(u);
+    }
+
+    // Max-heap priority queue to process paths with highest remaining power first
+    // Stores pairs of {remaining_power, town_index}
+    priority_queue<pair<int, int>> pq;
+    for (int i = 0; i < k; ++i) {
+        int t, p;
+        cin >> t >> p;
+        pq.push({p, t});
+    }
+
+    vector<bool> visited(n + 1, false);
+    int covered_count = 0;
+
+    // Process nodes similar to Dijkstra's algorithm
+    while (!pq.empty()) {
+        auto [p, u] = pq.top();
+        pq.pop();
+
+        // If the town has already been reached with a higher or equal power, skip
+        if (visited[u]) continue;
+
+        // Mark the town as covered
+        visited[u] = true;
+        covered_count++;
+
+        // If there is power left, broadcast to unvisited neighbors
+        if (p > 0) {
+            for (int v : adj[u]) {
+                if (!visited[v]) {
+                    pq.push({p - 1, v});
+                }
+            }
+        }
+    }
+
+    // Print a single integer — the number of covered towns
+    cout << covered_count << "\n";
+
+    return 0;
+}
+
