@@ -1,0 +1,83 @@
+#include <iostream>
+#include <algorithm>
+using namespace std;
+using ll = long long;
+
+struct N {
+    ll v; int h, s; N *l, *r;
+    N(ll val) : v(val), h(1), s(1), l(0), r(0) {}
+};
+
+int h(N* n) { return n ? n->h : 0; }
+int sz(N* n) { return n ? n->s : 0; }
+void up(N* n) { if(n) { n->h = 1 + max(h(n->l), h(n->r)); n->s = 1 + sz(n->l) + sz(n->r); } }
+int bal(N* n) { return n ? h(n->l) - h(n->r) : 0; }
+
+N* rotR(N* y) { N* x = y->l; y->l = x->r; x->r = y; up(y); up(x); return x; }
+N* rotL(N* x) { N* y = x->r; x->r = y->l; y->l = x; up(x); up(y); return y; }
+
+N* ins(N* n, ll k) {
+    if(!n) return new N(k);
+    if(k < n->v) n->l = ins(n->l, k);
+    else if(k > n->v) n->r = ins(n->r, k);
+    else return n;
+    up(n);
+    int b = bal(n);
+    if(b > 1 && k < n->l->v) return rotR(n);
+    if(b < -1 && k > n->r->v) return rotL(n);
+    if(b > 1 && k > n->l->v) { n->l = rotL(n->l); return rotR(n); }
+    if(b < -1 && k < n->r->v) { n->r = rotR(n->r); return rotL(n); }
+    return n;
+}
+
+N* minV(N* n) { while(n && n->l) n = n->l; return n; }
+
+N* del(N* n, ll k) {
+    if(!n) return n;
+    if(k < n->v) n->l = del(n->l, k);
+    else if(k > n->v) n->r = del(n->r, k);
+    else {
+        if(!n->l || !n->r) {
+            N* t = n->l ? n->l : n->r;
+            if(!t) { delete n; n = 0; }
+            else { *n = *t; delete t; }
+        } else {
+            N* t = minV(n->r);
+            n->v = t->v;
+            n->r = del(n->r, t->v);
+        }
+    }
+    if(!n) return n;
+    up(n);
+    int b = bal(n);
+    if(b > 1 && bal(n->l) >= 0) return rotR(n);
+    if(b > 1 && bal(n->l) < 0) { n->l = rotL(n->l); return rotR(n); }
+    if(b < -1 && bal(n->r) <= 0) return rotL(n);
+    if(b < -1 && bal(n->r) > 0) { n->r = rotR(n->r); return rotL(n); }
+    return n;
+}
+
+ll kth(N* n, int k) {
+    if(!n) return -1;
+    int lSz = sz(n->l);
+    if(k == lSz + 1) return n->v;
+    if(k <= lSz) return kth(n->l, k);
+    return kth(n->r, k - lSz - 1);
+}
+
+int main() {
+    ios_base::sync_with_stdio(0); cin.tie(0);
+    int q, t; if(!(cin >> q)) return 0;
+    N* root = 0; ll w;
+    while(q--) {
+        cin >> t;
+        if(t == 1) { cin >> w; root = ins(root, w); }
+        else if(t == 2) { cin >> w; root = del(root, w); }
+        else {
+            int m = sz(root);
+            if(m == 0) cout << -1 << "\n";
+            else if(m % 2 != 0) cout << kth(root, m / 2 + 1) << "\n";
+            else cout << (kth(root, m / 2) + kth(root, m / 2 + 1)) / 2 << "\n";
+        }
+    }
+}
