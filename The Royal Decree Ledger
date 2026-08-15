@@ -1,0 +1,79 @@
+#include <iostream>
+#include <string>
+#include <ext/pb_ds/assoc_container.hpp>
+#include <ext/pb_ds/tree_policy.hpp>
+
+using namespace std;
+using namespace __gnu_pbds;
+
+// Define the policy-based data structure (ordered set)
+// It supports all standard set operations plus order statistics in O(log N)
+typedef tree<long long, null_type, less<long long>, rb_tree_tag, tree_order_statistics_node_update> ordered_set;
+
+int main() {
+    // Optimize standard I/O operations for performance
+    ios_base::sync_with_stdio(false);
+    cin.tie(NULL);
+
+    int q;
+    // Read the total number of operations
+    if (!(cin >> q)) return 0;
+
+    ordered_set s;
+    string command;
+    long long val;
+
+    // Process each query
+    while (q--) {
+        cin >> command >> val;
+
+        if (command == "ADD") {
+            // Add element; duplicates are automatically ignored by 'less' policy
+            s.insert(val);
+        } 
+        else if (command == "REMOVE") {
+            // Remove element if it exists; safe to call even if element is absent
+            s.erase(val);
+        } 
+        else if (command == "EXISTS") {
+            // Check if element is currently in the ledger
+            if (s.find(val) != s.end()) {
+                cout << "YES\n";
+            } else {
+                cout << "NO\n";
+            }
+        } 
+        else if (command == "BEFORE") {
+            // Find the largest element strictly smaller than 'val'
+            auto it = s.lower_bound(val);
+            if (it == s.begin()) {
+                // No element strictly smaller exists
+                cout << "NONE\n";
+            } else {
+                --it;
+                cout << *it << "\n";
+            }
+        } 
+        else if (command == "AFTER") {
+            // Find the smallest element strictly greater than 'val'
+            auto it = s.upper_bound(val);
+            if (it == s.end()) {
+                // No element strictly greater exists
+                cout << "NONE\n";
+            } else {
+                cout << *it << "\n";
+            }
+        } 
+        else if (command == "POSITION") {
+            // Find the Kth element (1-indexed) in increasing order
+            if (val > s.size()) {
+                cout << "NONE\n";
+            } else {
+                // val - 1 because find_by_order is 0-indexed
+                cout << *s.find_by_order(val - 1) << "\n";
+            }
+        }
+    }
+
+    return 0;
+}
